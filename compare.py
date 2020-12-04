@@ -1,11 +1,21 @@
 import numpy as np
 import pandas as pd
+from tkinter import messagebox as msg
 from datetime import datetime
 from utils import *
 
 
-def quasimodo(lhs_filepath, rhs_filepath):
-    # todo what if file doesn't exist
+def run_comparison(lhs_filepath, rhs_filepath):
+    # Filepath can't be empty
+    if lhs_filepath == "":
+        msg.showwarning("Empty filepath", "Path to the first file is empty. Please fill in the filepath.")
+        return
+
+    if rhs_filepath == "":
+        msg.showwarning("Empty filepath", "Path to the second file is empty. Please fill in the filepath.")
+        return
+
+    # todo What if files don't exist
 
     output = compare(lhs_filepath, rhs_filepath)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -14,11 +24,6 @@ def quasimodo(lhs_filepath, rhs_filepath):
 
 
 def compare(lhs_filepath, rhs_filepath):
-    # lhs = pd.read_csv("C:\\Users\\admin\\Desktop\\left.csv", sep=";")
-    # rhs = pd.read_csv("C:\\Users\\admin\\Desktop\\right.csv", sep=";")
-
-    print(lhs_filepath)
-
     lhs = pd.read_csv(lhs_filepath, sep=";")
     rhs = pd.read_csv(rhs_filepath, sep=";")
 
