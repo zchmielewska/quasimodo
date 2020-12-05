@@ -1,57 +1,142 @@
 quasimodo facilitates data comparison
 
-How quasimodo behaves when...?
+How quasimodo behaves when comparing...?
 
-**Example: Numerical values**
+**Numerical values**
 
-Left     Right    Output
+Left   
 
-|v1|v2|  |v1|v2|  |v1|v2|  
-|--|--|  |--|--|  |--|--|  
-| 1| 4|  | 1| 1|  | 0| 3|  
-| 2| 5|  | 1| 1|  | 1| 4|  
-| 3| 6|  | 1| 1|  | 2| 5|  
+|v1|v2|
+|--|--|
+| 1| 4|
+| 2| 5|
+| 3| 6|
 
-Output contains the values from the left table less the value from the right table.
+Right
 
-**Example: Characters**
+|v1|v2|
+|--|--|
+| 1| 1|
+| 1| 1|  
+| 1| 1|
 
-Left     Right    Output
+Output
 
-|v1|v2|  |v1|v2|  |v1   |v2   |  
-|--|--|  |--|--|  |-----|-----|  
-| a| d|  | a| e|  |TRUE |FALSE|  
-| b| e|  | a| e|  |FALSE|TRUE |  
-| c| f|  | a| e|  |FALSE|FALSE|  
+|v1|v2|  
+|--|--|  
+| 0| 3|
+| 1| 4|
+| 2| 5|
+
+Output contains the values from the left table minus the values from the right table.
+
+**Characters**
+
+Left     
+
+|v1|v2|  
+|--|--|  
+| a| d|  
+| b| e|  
+| c| f|  
+
+Right    
+
+|v1|v2|  
+|--|--|  
+| a| e|  
+| a| e|  
+| a| e|  
+
+Output
+
+|v1   |v2   |  
+|-----|-----|  
+|TRUE |FALSE|  
+|FALSE|TRUE |  
+|FALSE|FALSE|  
 
 Output contains TRUE if the strings are the same and FALSE otherwise.
 
-**Example: Numerical and characters**
+**Numerical and characters**
 
-Left     Right    Output
+Left     
 
-|v1|v2|  |v1|v2|  |v1   |v2   |  
-|--|--|  |--|--|  |-----|-----|  
-| 1| d|  | a| e|  |FALSE|FALSE|  
-| 2| e|  | a| e|  |FALSE|TRUE |  
-| 3| f|  | a| e|  |FALSE|FALSE|  
+|v1|v2|  
+|--|--|  
+| 1| d|  
+| 2| e|  
+| 3| f|  
 
-Numerical values are compared as characters.
+Right    
 
-**Example: Different columns**
+|v1|v2|  
+|--|--|  
+| a| e|  
+| a| e|  
+| a| e|  
 
-Left     Right    Output
+Output
 
-|v1|v2|  |v1|v3|  |v1|v2          |v3           |
-|--|--|  |--|--|  |--|------------|-------------|
-| 1| 4|  | 1| a|  | 0|only_in_left|only_in_right|
-| 2| 5|  | 2| b|  | 0|only_in_left|only_in_right|
-| 3| 6|  | 3| c|  | 0|only_in_left|only_in_right|
+|v1   |v2   |  
+|-----|-----|  
+|FALSE|FALSE|  
+|FALSE|TRUE |  
+|FALSE|FALSE|  
 
-**Example: Different number of rows**
+Numerical values are converted into characters and compared in the same way as characters.
 
-|v1|v2|  |v1|v2|  |v1|v2|  
-|--|--|  |--|--|  |--|--|  
-| 1| 4|  | 1| 1|  | 0| 3|  
-| 2| 5|  | 1| 1|  | 1| 4|  
-| 3| 6|           | 2| 5|  
+**Different column names**
+
+Left     
+
+|v1|v2|  
+|--|--|  
+| 1| 4|  
+| 2| 5|  
+| 3| 6|  
+
+Right    
+
+|v1|v3|  
+|--|--|  
+| 1| d|  
+| 1| e|  
+| 1| f|  
+
+Output
+
+|v1|v2          |v3           |
+|--|------------|-------------|
+| 0|only_in_left|only_in_right|
+| 1|only_in_left|only_in_right|
+| 2|only_in_left|only_in_right|
+
+If there are columns in only one of the tables, the output contains the information either "only_in_left" or "only_in_right".
+
+**Different number of rows**
+
+Left
+
+|v1|v2|  
+|--|--|  
+| 1| d|  
+| 2| e|  
+| 3| f|           
+
+Right
+
+|v1|v2|  
+|--|--|  
+| 1| e|  
+| 1| e|  
+
+Output
+
+|v1|v2    |  
+|--|------|  
+| 0| FALSE|  
+| 1| TRUE |  
+| 3| FALSE|  
+
+The missing row is filled with zeros for numerical values and empty strings for characters.
