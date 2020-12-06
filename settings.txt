@@ -1,0 +1,1 @@
+{'lhs_filepath': 'C:\\Users\\admin\\Desktop\\left2.csv', 'rhs_filepath': 'C:\\Users\\admin\\Desktop\\right.csv', 'output_folder': 'C:\\Users\\admin\\Desktop\\test_folder'}
