@@ -11,7 +11,8 @@ if not Path("settings.txt").exists():
     settings = {
         'lhs_filepath': "",
         'rhs_filepath': "",
-        'output_folder': ""
+        'output_folder': "",
+        'delimiter': ",",
     }
     file.write(str(settings))
     file.close()
@@ -30,6 +31,7 @@ window = tk.Tk()
 # Add a title
 window.title("quasimodo | compare tables")
 
+# Create tabs
 tabControl = ttk.Notebook(window)
 tab1 = ttk.Frame(tabControl)
 tabControl.add(tab1, text="Main")
@@ -59,16 +61,24 @@ output_entry = tk.Entry(tab1, textvariable=output, width=48)
 output_entry.insert(0, settings['output_folder'])
 output_entry.grid(row=2, column=1)
 
-# Compare button
-compare_button = tk.Button(tab1, text="Compare", command=lambda: run_comparison(lhs.get(), rhs.get(), output.get(),
-                                                                                settings, new_settings))
-compare_button.grid(row=3, columnspan=2)
-
-# Add padding to each widget
+# Add padding to each widget in tab1
 for child in tab1.winfo_children():
     child.grid_configure(padx=5, pady=3)
 
 # todo: tab2 add delimiter button
+tk.Label(tab2, text="Delimiter:").grid(column=0, row=0)
+delimiter = tk.StringVar(tab2, settings["delimiter"])
+delimiter_rad1 = tk.Radiobutton(tab2, text="Comma", variable=delimiter, value=",")
+delimiter_rad2 = tk.Radiobutton(tab2, text="Semicolon", variable=delimiter, value=";")
+delimiter_rad1.grid(column=1, row=0)
+delimiter_rad2.grid(column=2, row=0)
+
+# Compare button
+# todo: create a function for new_settings creation where you get and sanitize all inputs
+compare_button = tk.Button(tab1, text="Compare", command=lambda: run_comparison(lhs.get(), rhs.get(), output.get(),
+                                                                                delimiter.get(),
+                                                                                settings, new_settings))
+compare_button.grid(row=3, columnspan=2)
 
 # Start GUI
 window.mainloop()

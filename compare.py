@@ -7,7 +7,7 @@ from pathlib import Path
 from utils import *
 
 
-def run_comparison(lhs, rhs, output, settings, new_settings):
+def run_comparison(lhs, rhs, output, delimiter, settings, new_settings):
 
     # Output folder can't have space at the end
     while output[-1] == " ":
@@ -43,10 +43,10 @@ def run_comparison(lhs, rhs, output, settings, new_settings):
         else:
             return
 
-    output = compare(lhs_filepath, rhs_filepath)
+    # Main comparison function
+    output = compare(lhs_filepath, rhs_filepath, delimiter)
 
     # Results are stored in quasimodo_YYYYMMDD.xlsx file
-    # todo: what is user want output as csv
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = "quasimodo_" + timestamp + ".xlsx"
     filepath = output_folder / filename
@@ -60,13 +60,10 @@ def run_comparison(lhs, rhs, output, settings, new_settings):
         file.close()
 
 
-def compare(lhs_filepath, rhs_filepath):
-    # todo: what if separator is comma?
+def compare(lhs_filepath, rhs_filepath, delimiter):
     # todo: what if file is excel?
-    lhs = pd.read_csv(lhs_filepath, sep=";")
-    rhs = pd.read_csv(rhs_filepath, sep=";")
-
-    print(lhs)
+    lhs = pd.read_csv(lhs_filepath, sep=delimiter)
+    rhs = pd.read_csv(rhs_filepath, sep=delimiter)
 
     common_cols = np.intersect1d(np.array(lhs.columns), np.array(rhs.columns))
     lhs_only_cols = np.setdiff1d(np.array(lhs.columns), common_cols)

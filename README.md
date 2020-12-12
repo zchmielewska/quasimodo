@@ -1,6 +1,6 @@
-quasimodo facilitates data comparison
+# quasimodo
 
-How quasimodo behaves when comparing...?
+### How quasimodo behaves when comparing...?
 
 **Numerical values**
 
@@ -140,3 +140,21 @@ Output
 | 3| FALSE|  
 
 The missing row is filled with zeros for numerical values and empty strings for characters.
+
+### How quasimodo handles...
+
+**csv files**
+
+quasimodo creates one output file with comparison of two files.
+
+**excel files**
+
+If the two files have only one sheet, quasimodo compares the two files regardless of the sheets' names.
+
+If the two files have multiple sheets, quasimodo compares the sheets with the same names.
+
+
+
+
+
+
