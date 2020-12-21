@@ -1,1 +1,1 @@
-{'lhs_filepath': '', 'rhs_filepath': '', 'output_folder': '', 'delimiter': ','}
+{'lhs': 'C:\\Users\\admin\\Desktop\\left.csv', 'rhs': 'C:\\Users\\admin\\Desktop\\left.csv', 'output': 'C:\\Users\\admin\\Desktop\\', 'delimiter': ';', 'columns_subset': ''}

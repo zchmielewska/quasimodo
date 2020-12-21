@@ -154,7 +154,3 @@ If the two files have only one sheet, quasimodo compares the two files regardles
 If the two files have multiple sheets, quasimodo compares the sheets with the same names.
 
 
-
-
-
-

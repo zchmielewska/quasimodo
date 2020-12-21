@@ -3,25 +3,19 @@ import pandas as pd
 import os
 from tkinter import messagebox as msg
 from datetime import datetime
-from pathlib import Path
 from utils import *
+from pathlib import Path
 
 
-def run_comparison(lhs, rhs, output, delimiter, settings, new_settings):
+def run(settings):
+    lhs_filepath = Path(settings['lhs'])
+    rhs_filepath = Path(settings['rhs'])
 
-    # Output folder can't have space at the end
-    while output[-1] == " ":
-        output = output[:-1]
-
-    # New settings will be saved to settings.txt for future usage
-    new_settings['lhs_filepath'] = lhs
-    new_settings['rhs_filepath'] = rhs
-    new_settings['output_folder'] = output
-
-    # Paths need to be properly formatted
-    lhs_filepath = Path(lhs)
-    rhs_filepath = Path(rhs)
-    output_folder = Path(output)
+    # Output folder can't have space(s) at the end
+    if settings['output'] != "":
+        while settings['output'][-1] == " ":
+            settings['output'] = settings['output'][:-1]
+    output_folder = Path(settings['output'])
 
     # Filepath must exist
     if not lhs_filepath.exists():
@@ -37,30 +31,29 @@ def run_comparison(lhs, rhs, output, delimiter, settings, new_settings):
         if answer is True:
             try:
                 os.makedirs(output_folder)
-                print(output_folder)
             except OSError:
-                msg.showwarning("Creation of the directory %s failed" % str(output_folder))
+                msg.showwarning("Creation of the directory %s failed" % str(settings['output_folder']))
         else:
             return
 
     # Main comparison function
-    output = compare(lhs_filepath, rhs_filepath, delimiter)
+    output = compare(lhs_filepath, rhs_filepath, settings['delimiter'])
 
     # Results are stored in quasimodo_YYYYMMDD.xlsx file
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = "quasimodo_" + timestamp + ".xlsx"
     filepath = output_folder / filename
-    output.to_excel(filepath, index = False)
+    output.to_excel(filepath, index=False)
     msg.showinfo("Output file", "Created file:\n" + str(filepath))
 
-    # If users changed settings, they are written to text file
-    if new_settings != settings:
-        file = open("settings.txt", "w")
-        file.write(str(new_settings))
-        file.close()
+    # Save settings for future use
+    file = open("settings.txt", "w")
+    file.write(str(settings))
+    file.close()
 
 
 def compare(lhs_filepath, rhs_filepath, delimiter):
+
     # todo: what if file is excel?
     lhs = pd.read_csv(lhs_filepath, sep=delimiter)
     rhs = pd.read_csv(rhs_filepath, sep=delimiter)
