@@ -28,4 +28,3 @@ def compare_num_char(x, y):
 def compare_num_num(x, y):
     return x - y
 
-

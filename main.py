@@ -1,7 +1,8 @@
 import ast
+import comparer
 import tkinter as tk
 from tkinter import ttk
-from compare import *
+from tkinter import scrolledtext
 from pathlib import Path
 
 # Load configuration
@@ -40,31 +41,41 @@ tabControl.pack(expand=1, fill="both")
 tab2 = ttk.Frame(tabControl)
 tabControl.add(tab2, text="Settings")
 
+#
+paths_frame = ttk.LabelFrame(tab1, text="Paths")
+paths_frame.grid(row=0, columnspan=2)
+paths_frame.grid_configure(padx=10, pady=10)
+
 # Tab1: Left entry box
 lhs = tk.StringVar()
-tk.Label(tab1, text="Left:").grid(row=0, column=0, sticky="W")
-lhs_entry = tk.Entry(tab1, textvariable=lhs, width=48)
+tk.Label(paths_frame, text="Left:").grid(row=0, column=0, sticky="W")
+lhs_entry = tk.Entry(paths_frame, textvariable=lhs, width=48)
 lhs_entry.insert(0, settings['lhs'])
 lhs_entry.grid(row=0, column=1)
 lhs_entry.focus()
 
 # Tab1: Right entry box
 rhs = tk.StringVar()
-tk.Label(tab1, text="Right:").grid(row=1, column=0, sticky="W")
-rhs_entry = tk.Entry(tab1, textvariable=rhs, width=48)
+tk.Label(paths_frame, text="Right:").grid(row=1, column=0, sticky="W")
+rhs_entry = tk.Entry(paths_frame, textvariable=rhs, width=48)
 rhs_entry.insert(0, settings['rhs'])
 rhs_entry.grid(row=1, column=1)
 
 # Tab1: Output folder
-tk.Label(tab1, text="Output folder:").grid(row=2, column=0, sticky="W")
+tk.Label(paths_frame, text="Output folder:").grid(row=2, column=0, sticky="W")
 output = tk.StringVar()
-output_entry = tk.Entry(tab1, textvariable=output, width=48)
+output_entry = tk.Entry(paths_frame, textvariable=output, width=48)
 output_entry.insert(0, settings['output'])
 output_entry.grid(row=2, column=1)
 
-# Add padding to each widget in tab1
-for child in tab1.winfo_children():
+# Add padding to each widget in paths_frame
+for child in paths_frame.winfo_children():
     child.grid_configure(padx=5, pady=3)
+
+# Tab1: Log
+log_scr = scrolledtext.ScrolledText(tab1, width=47, height=8)
+log_scr.grid(row=4, columnspan=2)
+log_scr.grid_configure(pady=10)
 
 # Tab2: Delimiter
 tk.Label(tab2, text="Delimiter:").grid(row=0, column=0, sticky="W")
@@ -85,13 +96,13 @@ for child in tab2.winfo_children():
     child.grid_configure(padx=5, pady=3)
 
 # Final: Compare button
-compare_button = tk.Button(tab1, text="Compare", command=lambda: run(settings = {
+compare_button = tk.Button(tab1, text="Compare", command=lambda: comparer.run(settings={
     'lhs': lhs.get(),
     'rhs': rhs.get(),
     'output': output.get(),
     'delimiter': delimiter.get(),
     'columns_subset': columns_subset.get()
-}))
+}, log_scr=log_scr))
 compare_button.grid(row=3, columnspan=2)
 
 # Start GUI
