@@ -5,6 +5,12 @@ from tkinter import ttk
 from tkinter import scrolledtext
 from pathlib import Path
 
+# todo: compare only the first row of files
+# todo: what if files are empty
+# todo: what is subset is selected and there are no columns in this subset
+# todo: the same/different flag
+entry_width = 72
+
 # Load configuration
 # If settings file doesn't exist, create it; otherwise read it
 if not Path("settings.txt").exists():
@@ -41,41 +47,42 @@ tabControl.pack(expand=1, fill="both")
 tab2 = ttk.Frame(tabControl)
 tabControl.add(tab2, text="Settings")
 
-#
+# Tab1 | Paths frame
 paths_frame = ttk.LabelFrame(tab1, text="Paths")
 paths_frame.grid(row=0, columnspan=2)
 paths_frame.grid_configure(padx=10, pady=10)
 
-# Tab1: Left entry box
+# Tab1 | Paths frame | Left entry box
 lhs = tk.StringVar()
 tk.Label(paths_frame, text="Left:").grid(row=0, column=0, sticky="W")
-lhs_entry = tk.Entry(paths_frame, textvariable=lhs, width=48)
+lhs_entry = tk.Entry(paths_frame, textvariable=lhs, width=entry_width)
 lhs_entry.insert(0, settings['lhs'])
 lhs_entry.grid(row=0, column=1)
 lhs_entry.focus()
 
-# Tab1: Right entry box
+# Tab1 | Paths frame | Right entry box
 rhs = tk.StringVar()
 tk.Label(paths_frame, text="Right:").grid(row=1, column=0, sticky="W")
-rhs_entry = tk.Entry(paths_frame, textvariable=rhs, width=48)
+rhs_entry = tk.Entry(paths_frame, textvariable=rhs, width=entry_width)
 rhs_entry.insert(0, settings['rhs'])
 rhs_entry.grid(row=1, column=1)
 
-# Tab1: Output folder
+# Tab1 | Paths frame | Output folder
 tk.Label(paths_frame, text="Output folder:").grid(row=2, column=0, sticky="W")
 output = tk.StringVar()
-output_entry = tk.Entry(paths_frame, textvariable=output, width=48)
+output_entry = tk.Entry(paths_frame, textvariable=output, width=entry_width)
 output_entry.insert(0, settings['output'])
 output_entry.grid(row=2, column=1)
 
-# Add padding to each widget in paths_frame
+# Tab 1 | Paths frame | Add padding to widgets
 for child in paths_frame.winfo_children():
     child.grid_configure(padx=5, pady=3)
 
-# Tab1: Log
-log_scr = scrolledtext.ScrolledText(tab1, width=47, height=8)
-log_scr.grid(row=4, columnspan=2)
-log_scr.grid_configure(pady=10)
+# Tab1 | Log
+tk.Label(tab1, text="Log:").grid(row=4, columnspan=2, sticky="W", padx=10)
+log_scr = scrolledtext.ScrolledText(tab1, width=65, height=12)
+log_scr.grid(row=5, columnspan=2)
+log_scr.grid_configure(padx=10, pady=(0, 10))
 
 # Tab2: Delimiter
 tk.Label(tab2, text="Delimiter:").grid(row=0, column=0, sticky="W")
@@ -88,8 +95,9 @@ delimiter_rad2.grid(row=0, column=2, sticky="W")
 # Tab2: Subset of columns
 tk.Label(tab2, text="Columns subset:").grid(row=1, column=0, sticky="W")
 columns_subset = tk.StringVar(tab2, "")
-columns_subset_entry = tk.Entry(tab2, textvariable=columns_subset, width=48)
+columns_subset_entry = tk.Entry(tab2, textvariable=columns_subset, width=entry_width)
 columns_subset_entry.grid(row=1, column=1, columnspan=2)
+columns_subset_entry.insert(0, settings['columns_subset'])
 
 # Add padding to each widget in tab2
 for child in tab2.winfo_children():
