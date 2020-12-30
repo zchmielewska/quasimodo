@@ -6,9 +6,10 @@ from tkinter import scrolledtext
 from pathlib import Path
 
 # todo: compare only the first row of files
-# todo: what if files are empty
 # todo: what is subset is selected and there are no columns in this subset
 # todo: the same/different flag
+# todo: what if file is excel?
+# todo: progressbar
 entry_width = 72
 
 # Load configuration
@@ -79,10 +80,10 @@ for child in paths_frame.winfo_children():
     child.grid_configure(padx=5, pady=3)
 
 # Tab1 | Log
-tk.Label(tab1, text="Log:").grid(row=4, columnspan=2, sticky="W", padx=10)
 log_scr = scrolledtext.ScrolledText(tab1, width=65, height=12)
 log_scr.grid(row=5, columnspan=2)
-log_scr.grid_configure(padx=10, pady=(0, 10))
+log_scr.grid_configure(padx=10, pady=10)
+log_scr.insert(tk.END, "Log...\n\n")
 
 # Tab2: Delimiter
 tk.Label(tab2, text="Delimiter:").grid(row=0, column=0, sticky="W")
