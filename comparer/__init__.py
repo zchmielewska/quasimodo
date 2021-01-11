@@ -77,6 +77,7 @@ def run(settings, log_scr):
 
 def compare(lhs, rhs, columns_subset):
     columns_subset_list = columns_subset.split(",")
+    the_same_flag = True
 
     # There might be columns only in LHS or RHS
     common_cols = np.intersect1d(np.array(lhs.columns), np.array(rhs.columns))
@@ -88,6 +89,10 @@ def compare(lhs, rhs, columns_subset):
         common_cols = np.intersect1d(common_cols, np.array(columns_subset_list))
         lhs_only_cols = np.intersect1d(lhs_only_cols, np.array(columns_subset_list))
         rhs_only_cols = np.intersect1d(rhs_only_cols, np.array(columns_subset_list))
+
+    # Tables differ if they contain different columns
+    if len(lhs_only_cols) > 0 or len(rhs_only_cols) > 0:
+        the_same_flag = False
 
     # RHS has fewer rows
     if len(lhs) - len(rhs) > 0:

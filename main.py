@@ -10,6 +10,7 @@ from pathlib import Path
 # todo: the same/different flag
 # todo: what if file is excel?
 # todo: progressbar
+# todo: # LHS has fewer rows + # RHS has fewer rows --> externalize as functions
 entry_width = 72
 
 # Load configuration
