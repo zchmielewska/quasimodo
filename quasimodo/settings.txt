@@ -1,1 +1,1 @@
-{'lhs': '', 'rhs': '', 'output': '', 'delimiter': ',', 'columns_subset': ''}
+{'lhs': 'C:\\Users\\admin\\Desktop\\lhs', 'rhs': 'C:\\Users\\admin\\Desktop\\rhs', 'output': 'C:\\Users\\admin\\Desktop\\output', 'delimiter': ',', 'columns_subset': ''}

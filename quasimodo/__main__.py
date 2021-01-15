@@ -1,12 +1,13 @@
 import ast
 import tkinter as tk
-from quasimodo import compare
+from quasimodo import run_comparison
 from tkinter import ttk
 from tkinter import scrolledtext
 from pathlib import Path
 
 
 def main():
+    # todo: log scroll to the end
     # todo: compare only the first row of files
     # todo: what is subset is selected and there are no columns in this subset
     # todo: the same/different flag
@@ -108,7 +109,7 @@ def main():
         child.grid_configure(padx=5, pady=3)
 
     # Final: Compare button
-    compare_button = tk.Button(tab1, text="Compare", command=lambda: compare.run(settings={
+    compare_button = tk.Button(tab1, text="Compare", command=lambda: run_comparison.run(settings={
         'lhs': lhs.get(),
         'rhs': rhs.get(),
         'output': output.get(),

@@ -1,7 +1,6 @@
 import os
 import tkinter as tk
-from pandas.api.types import is_string_dtype
-from pandas.api.types import is_numeric_dtype
+import pandas as pd
 from tkinter import messagebox as msg
 
 
@@ -32,13 +31,13 @@ def ensure_existence(lhs_path, rhs_path, output_folder, log_scr):
 
 
 def compare_cols(left_col, right_col):
-    if is_string_dtype(left_col) and is_string_dtype(right_col):
+    if pd.api.types.is_string_dtype(left_col) and pd.api.types.is_string_dtype(right_col):
         result = map(compare_char_char, left_col, right_col)
-    elif is_string_dtype(left_col) and is_numeric_dtype(right_col):
+    elif pd.api.types.is_string_dtype(left_col) and pd.api.types.is_numeric_dtype(right_col):
         result = map(compare_char_num, left_col, right_col)
-    elif is_numeric_dtype(left_col) and is_string_dtype(right_col):
+    elif pd.api.types.is_numeric_dtype(left_col) and pd.api.types.is_string_dtype(right_col):
         result = map(compare_num_char, left_col, right_col)
-    elif is_numeric_dtype(left_col) and is_numeric_dtype(right_col):
+    elif pd.api.types.is_numeric_dtype(left_col) and pd.api.types.is_numeric_dtype(right_col):
         result = map(compare_num_num, left_col, right_col)
     return result
 
