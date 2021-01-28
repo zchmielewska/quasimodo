@@ -10,10 +10,12 @@ def main():
     # todo: log scroll to the end
     # todo: compare only the first row of files
     # todo: what is subset is selected and there are no columns in this subset
-    # todo: the same/different flag
     # todo: what if file is excel?
     # todo: progressbar
     # todo: # LHS has fewer rows + # RHS has fewer rows --> externalize as functions
+    # todo: add numerical precision
+    # todo: wildcard <*>
+
     entry_width = 72
 
     # Load configuration
@@ -25,7 +27,10 @@ def main():
             'rhs': "",
             'output': "",
             'delimiter': ",",
-            'columns_subset': ""
+            'decimal': ".",
+            'comment': "",
+            'columns_subset': "",
+            'blank_tile': ""
         }
         file.write(str(current_settings))
         file.close()
@@ -68,9 +73,9 @@ def main():
     # Tab1 | Paths frame | Right entry box
     rhs = tk.StringVar()
     tk.Label(paths_frame, text="Right:").grid(row=1, column=0, sticky="W")
-    rhs_entry = tk.Entry(paths_frame, textvariable=rhs, width=entry_width)
+    rhs_entry = tk.Entry(paths_frame, textvariable=rhs) # , width=entry_width
     rhs_entry.insert(0, settings['rhs'])
-    rhs_entry.grid(row=1, column=1)
+    rhs_entry.grid(row=1, column=1, sticky="WE")
 
     # Tab1 | Paths frame | Output folder
     tk.Label(paths_frame, text="Output folder:").grid(row=2, column=0, sticky="W")
@@ -89,22 +94,46 @@ def main():
     log_scr.grid_configure(padx=10, pady=10)
     log_scr.insert(tk.END, "Log...\n\n")
 
-    # Tab2: Delimiter
+    # Tab2 | Delimiter
     tk.Label(tab2, text="Delimiter:").grid(row=0, column=0, sticky="W")
     delimiter = tk.StringVar(tab2, settings["delimiter"])
     delimiter_rad1 = tk.Radiobutton(tab2, text="Comma", variable=delimiter, value=",")
     delimiter_rad2 = tk.Radiobutton(tab2, text="Semicolon", variable=delimiter, value=";")
+    delimiter_rad3 = tk.Radiobutton(tab2, text="Tab", variable=delimiter, value="\t")
     delimiter_rad1.grid(row=0, column=1, sticky="W")
     delimiter_rad2.grid(row=0, column=2, sticky="W")
+    delimiter_rad3.grid(row=0, column=3, sticky="W")
 
-    # Tab2: Subset of columns
-    tk.Label(tab2, text="Columns subset:").grid(row=1, column=0, sticky="W")
+    # Tab2 | Decimal
+    tk.Label(tab2, text="Decimal:").grid(row=1, column=0, sticky="W")
+    decimal = tk.StringVar(tab2, settings["decimal"])
+    decimal_rad1 = tk.Radiobutton(tab2, text="Dot", variable=decimal, value=".")
+    decimal_rad2 = tk.Radiobutton(tab2, text="Comma", variable=decimal, value=",")
+    decimal_rad1.grid(row=1, column=1, sticky="W")
+    decimal_rad2.grid(row=1, column=2, sticky="W")
+
+    # Tab2 | Comment
+    tk.Label(tab2, text="Comment:").grid(row=2, column=0, sticky="W")
+    comment = tk.StringVar(tab2, "")
+    comment_entry = tk.Entry(tab2, textvariable=comment, width=10)
+    comment_entry.grid(row=2, column=1, columnspan=2, sticky="W")
+    comment_entry.insert(0, settings['comment'])
+
+    # Tab 2 | Columns subset
+    tk.Label(tab2, text="Columns subset:").grid(row=3, column=0, sticky="W")
     columns_subset = tk.StringVar(tab2, "")
     columns_subset_entry = tk.Entry(tab2, textvariable=columns_subset, width=entry_width)
-    columns_subset_entry.grid(row=1, column=1, columnspan=2)
+    columns_subset_entry.grid(row=3, column=1, columnspan=3)
     columns_subset_entry.insert(0, settings['columns_subset'])
 
-    # Add padding to each widget in tab2
+    # Tab2 | Blank tile
+    tk.Label(tab2, text="Blank tile <*>:").grid(row=4, column=0, sticky="W")
+    blank_tile = tk.StringVar(tab2, "")
+    blank_tile_entry = tk.Entry(tab2, textvariable=blank_tile, width=entry_width)
+    blank_tile_entry.grid(row=4, column=1, columnspan=3)
+    blank_tile_entry.insert(0, settings['blank_tile'])
+
+    # Tab2 | Add padding to each widget
     for child in tab2.winfo_children():
         child.grid_configure(padx=5, pady=3)
 
@@ -114,7 +143,10 @@ def main():
         'rhs': rhs.get(),
         'output': output.get(),
         'delimiter': delimiter.get(),
-        'columns_subset': columns_subset.get()
+        'decimal': decimal.get(),
+        'comment': comment.get(),
+        'columns_subset': columns_subset.get(),
+        'blank_tile': blank_tile.get()
     }, log_scr=log_scr))
     compare_button.grid(row=3, columnspan=2)
 

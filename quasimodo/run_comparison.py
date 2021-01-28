@@ -9,66 +9,89 @@ from pathlib import Path
 from tkinter import messagebox as msg
 
 
+def create_job_list(settings):
+    # Initiate data frame for the list of jobs
+    job_list = pd.DataFrame(columns=["Number", "LeftFile", "RightFile", "Result", "Message"])
+
+    # Blank tiles (as in scrabble)
+    blank_tile_list = settings['blank_tile'].split(",")
+
+    for blank_tile_element in blank_tile_list:
+        lhs_replaced = settings['lhs'].replace("<*>", blank_tile_element)
+        rhs_replaced = settings['rhs'].replace("<*>", blank_tile_element)
+        lhs_type = "file" if (lhs_replaced[-4:] == ".csv" or lhs_replaced[-4:] == ".txt") else "folder" # todo: expand for different data types
+        rhs_type = "file" if (rhs_replaced[-4:] == ".csv" or lhs_replaced[-4:] == ".txt") else "folder" # todo: expand for different data types
+        lhs = Path(lhs_replaced)
+        rhs = Path(rhs_replaced)
+
+        if (lhs_type == "file" and rhs_type == "folder") or (lhs_type == "folder" and rhs_type == "file"):
+            msg.showwarning("Inconsistent sources", "Left and right must be either both files or folders.")
+        elif lhs_type == "file" and rhs_type == "file":
+            job_list = job_list.append({"LeftFile": lhs, "RightFile": rhs}, ignore_index=True)
+        elif lhs_type == "folder" and rhs_type == "folder":
+            lhs_files = [f for f in os.listdir(lhs) if os.path.isfile(os.path.join(lhs, f))]
+            rhs_files = [f for f in os.listdir(rhs) if os.path.isfile(os.path.join(rhs, f))]
+            common_files = np.intersect1d(np.array(lhs_files), np.array(rhs_files))  # todo: add only csv files
+            for common_file in common_files:
+                lhs_file = os.path.join(lhs, common_file)
+                rhs_file = os.path.join(rhs, common_file)
+                job_list = job_list.append({"LeftFile": lhs_file, "RightFile": rhs_file}, ignore_index=True)
+
+    # Add numbers
+    job_list['Number'] = job_list.reset_index().index+1
+    return job_list
+
+
 def run(settings, log_scr):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_scr.insert(tk.END, "Starting job: " + timestamp + "\n\n")
+    job_list = create_job_list(settings)
 
-    lhs_path = Path(settings['lhs'])
-    rhs_path = Path(settings['rhs'])
-
-    # Prepare and check paths
+    # Prepare output file
     output_folder = sanitize_output(settings)
-    paths_check = utils.ensure_existence(lhs_path, rhs_path, output_folder, log_scr)  # paths must exist
-    if paths_check > 0:
-        return
+    if not output_folder.exists():
+        answer = msg.askyesno("Create output folder", "The output folder does not exist. Do you want to create it?")
+        if answer is True:
+            try:
+                os.makedirs(output_folder)
+                log_scr.insert(tk.END, "Created folder:\n" + str(output_folder) + "\n")
+            except OSError:
+                msg.showwarning("Creation of the directory %s failed" % str(output_folder))
+                return
+    output_filename = "quasimodo" + timestamp + ".xlsx"
+    output_path = os.path.join(output_folder, output_filename)
+    writer = pd.ExcelWriter(output_path)
 
-    # Approach differs depending if user chooses files or folders
-    comparison_sources = pd.DataFrame(columns=["lhs", "rhs"])
-
-    # file + folder
-    if (os.path.isdir(lhs_path) and os.path.isfile(rhs_path)) or (os.path.isfile(lhs_path) and os.path.isdir(rhs_path)):
-        msg.showwarning("Inconsistent sources", "Left and right must be either both files or folders.")
-
-    # folder + folder
-    if os.path.isdir(lhs_path) and os.path.isdir(rhs_path):
-        lhs_files = [f for f in os.listdir(lhs_path) if os.path.isfile(os.path.join(lhs_path, f))]
-        rhs_files = [f for f in os.listdir(rhs_path) if os.path.isfile(os.path.join(rhs_path, f))]
-        common_files = np.intersect1d(np.array(lhs_files), np.array(rhs_files))  # todo: add only csv files
-        for common_file in common_files:
-            comparison_sources = comparison_sources.append({"lhs": os.path.join(lhs_path, common_file),
-                                                            "rhs": os.path.join(rhs_path, common_file)},
-                                                           ignore_index=True)
-    # file + file
-    if os.path.isfile(lhs_path) and os.path.isfile(rhs_path):
-        comparison_sources = comparison_sources.append({"lhs": lhs_path, "rhs": rhs_path}, ignore_index=True)
-
-    # main comparison
-    for index, row in comparison_sources.iterrows():
-        # For folder comparison, show the file number
-        if os.path.isdir(lhs_path) and os.path.isdir(rhs_path):
-            log_scr.insert(tk.END, "[" + str(index+1) + "/" + str(len(comparison_sources)) + "]\n")
-        log_scr.insert(tk.END, "LHS: " + str(row['lhs']) + "\nRHS: " + str(row['rhs']) + "\n")
-
+    # Iterate over jobs
+    for index, row in job_list.iterrows():
         # If there is a problem with reading a file, use an empty DataFrame to not break the program
         try:
-            lhs = pd.read_csv(row['lhs'], sep=settings['delimiter'])
+            if settings['comment'] == "":
+                lhs = pd.read_csv(row['LeftFile'], sep=settings['delimiter'], decimal=settings['decimal'])
+            else:
+                lhs = pd.read_csv(row['LeftFile'], sep=settings['delimiter'], decimal=settings['decimal'], comment=settings['comment'])
         except pd.errors.EmptyDataError:
             lhs = pd.DataFrame()
         try:
-            rhs = pd.read_csv(row['rhs'], sep=settings['delimiter'])
+            if settings['comment'] == "":
+                rhs = pd.read_csv(row['RightFile'], sep=settings['delimiter'], decimal=settings['decimal'])
+            else:
+                rhs = pd.read_csv(row['RightFile'], sep=settings['delimiter'], decimal=settings['decimal'], comment=settings['comment'])
         except pd.errors.EmptyDataError:
             rhs = pd.DataFrame()
 
-        output = compare(lhs, rhs, settings['columns_subset'], log_scr)
-        lhs_filename = os.path.splitext(os.path.basename(row['lhs']))[0]
-        rhs_filename = os.path.splitext(os.path.basename(row['rhs']))[0]
-        if lhs_filename == rhs_filename:
-            output_filename = lhs_filename + "_quasimodo_" + timestamp + ".xlsx"
-        else:
-            output_filename = lhs_filename + "_" + rhs_filename + "_quasimodo_" + timestamp + ".xlsx"
-        filepath = output_folder / output_filename
-        output.to_excel(filepath, index=False)
-        log_scr.insert(tk.END, "Out: " + str(filepath) + "\n\n")
+        output, the_same_flag = compare(lhs, rhs, settings['columns_subset'])
+        output.to_excel(writer, sheet_name=str(row['Number']))
+
+    job_list.to_excel(writer, sheet_name="JobList")
+    writer.save()
+    log_scr.insert(tk.END, "Out: " + str(output_path) + "\n")
+
+    # One information if files are the same or not
+    if the_same_flag:
+        log_scr.insert(tk.END, "Files are the same.\n\n")
+    else:
+        log_scr.insert(tk.END, "Files are different.\n\n")
 
     # Save settings for future use
     file = open("settings.txt", "w")
@@ -76,7 +99,7 @@ def run(settings, log_scr):
     file.close()
 
 
-def compare(lhs, rhs, columns_subset, log_scr):
+def compare(lhs, rhs, columns_subset):
     columns_subset_list = columns_subset.split(",")
     the_same_flag = True
 
@@ -124,11 +147,11 @@ def compare(lhs, rhs, columns_subset, log_scr):
         result = utils.compare_cols(lhs[col], rhs[col])
         output[col] = list(result)
         # the_same_flag is set to false when differences appear
-        if pd.api.types.is_string_dtype(result):
-            if not all(list(result)):
+        if pd.api.types.is_bool_dtype(output[col]):
+            if not all(output[col]):
                 the_same_flag = False
-        if pd.api.types.is_numeric_dtype(result):
-            if not all(abs(list(result)) < 0.001):
+        elif pd.api.types.is_numeric_dtype(output[col]):
+            if not all(abs(output[col]) < 0.001):
                 the_same_flag = False
 
     # Add LHS only cols
@@ -143,12 +166,7 @@ def compare(lhs, rhs, columns_subset, log_scr):
     if len(lhs_only_cols) > 0 or len(rhs_only_cols) > 0:
         the_same_flag = False
 
-    if the_same_flag:
-        log_scr.insert(tk.END, "Files are the same.\n")
-    else:
-        log_scr.insert(tk.END, "Files are different.\n")
-
-    return output
+    return output, the_same_flag
 
 
 def sanitize_output(settings):
