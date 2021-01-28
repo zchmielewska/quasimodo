@@ -1,1 +1,1 @@
-{'lhs': 'C:\\Users\\admin\\Desktop\\tab.txt', 'rhs': 'C:\\Users\\admin\\Desktop\\tab.txt', 'output': 'C:\\Users\\admin\\Desktop', 'delimiter': '\t', 'decimal': '.', 'comment': '', 'columns_subset': '', 'blank_tile': ''}
+{'lhs': 'C:\\Users\\admin\\Desktop\\tab<*>.txt', 'rhs': 'C:\\Users\\admin\\Desktop\\tab<*>.txt', 'output': 'C:\\Users\\admin\\Desktop', 'delimiter': '\t', 'decimal': '.', 'comment': '', 'columns_subset': '', 'blank_tile': '1,2'}

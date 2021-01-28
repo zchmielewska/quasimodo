@@ -11,7 +11,7 @@ from tkinter import messagebox as msg
 
 def create_job_list(settings):
     # Initiate data frame for the list of jobs
-    job_list = pd.DataFrame(columns=["Number", "LeftFile", "RightFile", "Result", "Message"])
+    job_list = pd.DataFrame(columns=["Number", "LeftFile", "RightFile", "TheSame"])
 
     # Blank tiles (as in scrabble)
     blank_tile_list = settings['blank_tile'].split(",")
@@ -44,7 +44,7 @@ def create_job_list(settings):
 
 def run(settings, log_scr):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_scr.insert(tk.END, "Starting job: " + timestamp + "\n\n")
+    log_scr.insert(tk.END, "Starting job: " + timestamp + "\n")
     job_list = create_job_list(settings)
 
     # Prepare output file
@@ -81,17 +81,12 @@ def run(settings, log_scr):
             rhs = pd.DataFrame()
 
         output, the_same_flag = compare(lhs, rhs, settings['columns_subset'])
-        output.to_excel(writer, sheet_name=str(row['Number']))
+        output.to_excel(writer, sheet_name=str(row['Number']), index=False)
+        job_list.loc[index, "Result"] = the_same_flag
 
-    job_list.to_excel(writer, sheet_name="JobList")
+    job_list.to_excel(writer, sheet_name="JobList", index=False)
     writer.save()
-    log_scr.insert(tk.END, "Out: " + str(output_path) + "\n")
-
-    # One information if files are the same or not
-    if the_same_flag:
-        log_scr.insert(tk.END, "Files are the same.\n\n")
-    else:
-        log_scr.insert(tk.END, "Files are different.\n\n")
+    log_scr.insert(tk.END, "Created file:\n" + str(output_path) + "\n")
 
     # Save settings for future use
     file = open("settings.txt", "w")
