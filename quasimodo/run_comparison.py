@@ -19,8 +19,8 @@ def create_job_list(settings):
     for blank_tile_element in blank_tile_list:
         lhs_replaced = settings['lhs'].replace("<*>", blank_tile_element)
         rhs_replaced = settings['rhs'].replace("<*>", blank_tile_element)
-        lhs_type = "file" if (lhs_replaced[-4:] == ".csv" or lhs_replaced[-4:] == ".txt") else "folder" # todo: expand for different data types
-        rhs_type = "file" if (rhs_replaced[-4:] == ".csv" or lhs_replaced[-4:] == ".txt") else "folder" # todo: expand for different data types
+        lhs_type = "file" if (lhs_replaced[-4:] == ".csv" or lhs_replaced[-4:] == ".txt" or lhs_replaced[-4:] == ".tbl") else "folder" # todo: expand for different data types
+        rhs_type = "file" if (rhs_replaced[-4:] == ".csv" or rhs_replaced[-4:] == ".txt" or rhs_replaced[-4:] == ".tbl") else "folder" # todo: expand for different data types
         lhs = Path(lhs_replaced)
         rhs = Path(rhs_replaced)
 
@@ -82,7 +82,7 @@ def run(settings, log_scr):
 
         output, the_same_flag = compare(lhs, rhs, settings['columns_subset'])
         output.to_excel(writer, sheet_name=str(row['Number']), index=False)
-        job_list.loc[index, "Result"] = the_same_flag
+        job_list.loc[index, "TheSame"] = the_same_flag
 
     job_list.to_excel(writer, sheet_name="JobList", index=False)
     writer.save()
