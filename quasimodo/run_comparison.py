@@ -11,11 +11,16 @@ from tkinter import messagebox as msg
 
 def create_job_list(settings):
     # Initiate data frame for the list of jobs
-    job_list = pd.DataFrame(columns=["Number", "LeftFile", "RightFile", "TheSame"])
+    job_list = pd.DataFrame(columns=["Number", "LeftFile", "RightFile", "TheSame", "Message"])
 
     # Blank tiles (as in scrabble)
     blank_tile_list = settings['blank_tile'].split(",")
 
+    # If there is no <*> in paths, then don't use blank tiles
+    if (not "<*>" in settings['lhs']) and (not "<*>" in settings['rhs']):
+        blank_tile_list = ['']
+
+    # If blank tile hasn't been set, the list contains one element with empty string
     for blank_tile_element in blank_tile_list:
         lhs_replaced = settings['lhs'].replace("<*>", blank_tile_element)
         rhs_replaced = settings['rhs'].replace("<*>", blank_tile_element)
@@ -42,28 +47,54 @@ def create_job_list(settings):
     return job_list
 
 
-def run(settings, log_scr):
+def run(settings, log):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_scr.insert(tk.END, "Starting job: " + timestamp + "\n")
+    utils.add_log(log, "\n#################################")
+    utils.add_log(log, "\nStarting job: " + timestamp + "\n")
     job_list = create_job_list(settings)
 
     # Prepare output file
-    output_folder = sanitize_output(settings)
+    output_folder = utils.sanitize_output(settings)
     if not output_folder.exists():
         answer = msg.askyesno("Create output folder", "The output folder does not exist. Do you want to create it?")
         if answer is True:
             try:
                 os.makedirs(output_folder)
-                log_scr.insert(tk.END, "Created folder:\n" + str(output_folder) + "\n")
+                utils.add_log(log, "Created folder:\n" + str(output_folder))
             except OSError:
-                msg.showwarning("Creation of the directory %s failed" % str(output_folder))
+                msg.showwarning("Warning", "Creation of the directory %s failed" % str(output_folder))
                 return
     output_filename = "quasimodo" + timestamp + ".xlsx"
     output_path = os.path.join(output_folder, output_filename)
     writer = pd.ExcelWriter(output_path)
+    job_list.to_excel(writer, sheet_name="JobList", index=False)
 
     # Iterate over jobs
     for index, row in job_list.iterrows():
+        # Log current tables
+        utils.add_log(log, "[" + str(index+1) + "]")
+        utils.add_log(log, "Left:  " + str(row['LeftFile']))
+        utils.add_log(log, "Right: " + str(row['RightFile']) + "\n")
+
+        # Check if files exist
+        if not row['LeftFile'].exists():
+            # If it's the first file, don't continue
+            if index == 0:
+                msg.showwarning("Incorrect file", "Left file does not exist:\n" + str(row["LeftFile"]))
+                return
+            # If it's not the first file, skip the row
+            job_list.loc[index, "Message"] = "Left file does not exist"
+            continue
+
+        if not row['RightFile'].exists():
+            # If it's the first file, don't continue
+            if index == 0:
+                msg.showwarning("Incorrect file", "Right file does not exist:\n" + str(row["RightFile"]))
+                return
+            # If it's not the first file, skip the row
+            job_list.loc[index, "Message"] = "Right file does not exist"
+            continue
+
         # If there is a problem with reading a file, use an empty DataFrame to not break the program
         try:
             if settings['comment'] == "":
@@ -83,10 +114,11 @@ def run(settings, log_scr):
         output, the_same_flag = compare(lhs, rhs, settings['columns_subset'])
         output.to_excel(writer, sheet_name=str(row['Number']), index=False)
         job_list.loc[index, "TheSame"] = the_same_flag
+        utils.add_log(log, "Files are the same.\n") if the_same_flag else utils.add_log(log, "Files are different.\n")
 
     job_list.to_excel(writer, sheet_name="JobList", index=False)
     writer.save()
-    log_scr.insert(tk.END, "Created file:\n" + str(output_path) + "\n")
+    utils.add_log(log, "Created file:\n" + str(output_path))
 
     # Save settings for future use
     file = open("settings.txt", "w")
@@ -164,10 +196,3 @@ def compare(lhs, rhs, columns_subset):
     return output, the_same_flag
 
 
-def sanitize_output(settings):
-    # Output folder can't have space(s) at the end
-    if settings['output'] != "":
-        while settings['output'][-1] == " ":
-            settings['output'] = settings['output'][:-1]
-    output_folder = Path(settings['output'])
-    return output_folder

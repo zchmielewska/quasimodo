@@ -1,1 +1,1 @@
-{'lhs': '', 'rhs': '', 'output': '', 'delimiter': ',', 'decimal': '.', 'comment': '', 'columns_subset': '', 'blank_tile': ''}
+{'lhs': 'C:\\Users\\admin\\Desktop\\currency_1_MVIS - Copy.tbl', 'rhs': 'C:\\Users\\admin\\Desktop\\currency_8_MVIS - Copy.tbl', 'output': 'C:\\Users\\admin\\Desktop', 'delimiter': '\t', 'decimal': '.', 'comment': '', 'columns_subset': '', 'blank_tile': ''}

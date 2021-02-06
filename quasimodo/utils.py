@@ -1,7 +1,6 @@
-import os
 import tkinter as tk
 import pandas as pd
-from tkinter import messagebox as msg
+from pathlib import Path
 
 
 def compare_cols(left_col, right_col):
@@ -30,3 +29,19 @@ def compare_num_char(x, y):
 
 def compare_num_num(x, y):
     return x - y
+
+
+def add_log(st, text):
+    st.configure(state='normal')
+    st.insert(tk.END, str(text) + "\n")
+    st.see(tk.END)
+    st.configure(state='disabled')
+
+
+def sanitize_output(settings):
+    # Output folder can't have space(s) at the end
+    if settings['output'] != "":
+        while settings['output'][-1] == " ":
+            settings['output'] = settings['output'][:-1]
+    output_folder = Path(settings['output'])
+    return output_folder

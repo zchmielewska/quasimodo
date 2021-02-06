@@ -14,7 +14,9 @@ def main():
     # todo: progressbar
     # todo: # LHS has fewer rows + # RHS has fewer rows --> externalize as functions
     # todo: add numerical precision
-    # todo: wildcard <*>
+    # todo: don't user loop for wildcard if no wildcard used in path
+    # todo: if file does not exist - inform
+    # todo: what if the incorrect path is one of the many?
 
     entry_width = 72
 
@@ -45,6 +47,7 @@ def main():
 
     # Create instance
     window = tk.Tk()
+    window.geometry("600x400")
 
     # Add a title
     window.title("quasimodo | compare tables")
@@ -57,42 +60,46 @@ def main():
     tab2 = ttk.Frame(tab_control)
     tab_control.add(tab2, text="Settings")
 
+    tab1.columnconfigure(0, weight=1)
+
     # Tab1 | Paths frame
     paths_frame = ttk.LabelFrame(tab1, text="Paths")
-    paths_frame.grid(row=0, columnspan=2)
+    paths_frame.grid(row=0, column=0, sticky="NSEW")
     paths_frame.grid_configure(padx=10, pady=10)
+    paths_frame.columnconfigure(0, weight=0)
+    paths_frame.columnconfigure(1, weight=1)
 
     # Tab1 | Paths frame | Left entry box
     lhs = tk.StringVar()
     tk.Label(paths_frame, text="Left:").grid(row=0, column=0, sticky="W")
-    lhs_entry = tk.Entry(paths_frame, textvariable=lhs, width=entry_width)
+    lhs_entry = tk.Entry(paths_frame, textvariable=lhs)
     lhs_entry.insert(0, settings['lhs'])
-    lhs_entry.grid(row=0, column=1)
+    lhs_entry.grid(row=0, column=1, sticky="WE")
     lhs_entry.focus()
 
     # Tab1 | Paths frame | Right entry box
     rhs = tk.StringVar()
     tk.Label(paths_frame, text="Right:").grid(row=1, column=0, sticky="W")
-    rhs_entry = tk.Entry(paths_frame, textvariable=rhs) # , width=entry_width
+    rhs_entry = tk.Entry(paths_frame, textvariable=rhs)
     rhs_entry.insert(0, settings['rhs'])
     rhs_entry.grid(row=1, column=1, sticky="WE")
 
     # Tab1 | Paths frame | Output folder
     tk.Label(paths_frame, text="Output folder:").grid(row=2, column=0, sticky="W")
     output = tk.StringVar()
-    output_entry = tk.Entry(paths_frame, textvariable=output, width=entry_width)
+    output_entry = tk.Entry(paths_frame, textvariable=output)
     output_entry.insert(0, settings['output'])
-    output_entry.grid(row=2, column=1)
+    output_entry.grid(row=2, column=1, sticky="WE")
 
     # Tab 1 | Paths frame | Add padding to widgets
     for child in paths_frame.winfo_children():
         child.grid_configure(padx=5, pady=3)
 
     # Tab1 | Log
-    log_scr = scrolledtext.ScrolledText(tab1, width=65, height=12)
-    log_scr.grid(row=5, columnspan=2)
-    log_scr.grid_configure(padx=10, pady=10)
-    log_scr.insert(tk.END, "Log...\n\n")
+    log = scrolledtext.ScrolledText(tab1, height=12)
+    log.grid_configure(row=2, padx=10, pady=10, sticky="WE")
+    log.insert(tk.END, "Log...\n")
+    log.configure(state='disabled')
 
     # Tab2 | Delimiter
     tk.Label(tab2, text="Delimiter:").grid(row=0, column=0, sticky="W")
@@ -147,8 +154,8 @@ def main():
         'comment': comment.get(),
         'columns_subset': columns_subset.get(),
         'blank_tile': blank_tile.get()
-    }, log_scr=log_scr))
-    compare_button.grid(row=3, columnspan=2)
+    }, log=log))
+    compare_button.grid(row=1)
 
     # Start GUI
     window.mainloop()
