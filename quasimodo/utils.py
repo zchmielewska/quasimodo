@@ -16,19 +16,39 @@ def compare_cols(left_col, right_col):
 
 
 def compare_char_char(x, y):
-    return x == y
+    if pd.isna(x) and pd.isna(y):
+        return True
+    elif (not pd.isna(x) and pd.isna(y)) or (pd.isna(x) and not pd.isna(y)):
+        return False
+    else:
+        return x == y
 
 
 def compare_char_num(x, y):
-    return x == str(y)
+    if pd.isna(x) and pd.isna(y):
+        return True
+    elif (not pd.isna(x) and pd.isna(y)) or (pd.isna(x) and not pd.isna(y)):
+        return False
+    else:
+        return x == str(y)
 
 
 def compare_num_char(x, y):
-    return str(x) == y
+    if pd.isna(x) and pd.isna(y):
+        return True
+    elif (not pd.isna(x) and pd.isna(y)) or (pd.isna(x) and not pd.isna(y)):
+        return False
+    else:
+        return str(x) == y
 
 
 def compare_num_num(x, y):
-    return x - y
+    if pd.isna(x) and pd.isna(y):
+        return True
+    elif (not pd.isna(x) and pd.isna(y)) or (pd.isna(x) and not pd.isna(y)):
+        return False
+    else:
+        return x - y
 
 
 def add_log(st, text):

@@ -111,7 +111,7 @@ def run(settings, log):
         except pd.errors.EmptyDataError:
             rhs = pd.DataFrame()
 
-        output, the_same_flag = compare(lhs, rhs, settings['columns_subset'])
+        output, the_same_flag = compare(lhs, rhs, settings['columns_subset'], settings['numerical_precision'])
         output.to_excel(writer, sheet_name=str(row['Number']), index=False)
         job_list.loc[index, "TheSame"] = the_same_flag
         utils.add_log(log, "Files are the same.\n") if the_same_flag else utils.add_log(log, "Files are different.\n")
@@ -126,7 +126,7 @@ def run(settings, log):
     file.close()
 
 
-def compare(lhs, rhs, columns_subset):
+def compare(lhs, rhs, columns_subset, numerical_precision):
     columns_subset_list = columns_subset.split(",")
     the_same_flag = True
 
@@ -178,7 +178,7 @@ def compare(lhs, rhs, columns_subset):
             if not all(output[col]):
                 the_same_flag = False
         elif pd.api.types.is_numeric_dtype(output[col]):
-            if not all(abs(output[col]) < 0.001):
+            if not all(abs(output[col]) < float(numerical_precision)):
                 the_same_flag = False
 
     # Add LHS only cols

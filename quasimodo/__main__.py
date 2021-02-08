@@ -1,23 +1,26 @@
 import ast
+import threading
 import tkinter as tk
 from quasimodo import run_comparison
 from tkinter import ttk
 from tkinter import scrolledtext
 from pathlib import Path
 
+# todo: what is subset is selected and there are no columns in this subset
+# todo: progressbar
+# todo: add numerical precision as this thing that you cange numbers
+# todo: order of the columns
+# todo: output folder cant be empty
+
+
+# Separate thread for the main run function
+def thread_run(settings, log):
+    # Call work function
+    t=threading.Thread(target=run_comparison.run, args=(settings, log))
+    t.start()
+
 
 def main():
-    # todo: log scroll to the end
-    # todo: compare only the first row of files
-    # todo: what is subset is selected and there are no columns in this subset
-    # todo: what if file is excel?
-    # todo: progressbar
-    # todo: # LHS has fewer rows + # RHS has fewer rows --> externalize as functions
-    # todo: add numerical precision
-    # todo: don't user loop for wildcard if no wildcard used in path
-    # todo: if file does not exist - inform
-    # todo: what if the incorrect path is one of the many?
-
     entry_width = 72
 
     # Load configuration
@@ -30,6 +33,7 @@ def main():
             'output': "",
             'delimiter': ",",
             'decimal': ".",
+            'numerical_precision': "",
             'comment': "",
             'columns_subset': "",
             'blank_tile': ""
@@ -126,18 +130,25 @@ def main():
     comment_entry.grid(row=2, column=1, columnspan=2, sticky="W")
     comment_entry.insert(0, settings['comment'])
 
+    # Tab2 | Numerical precision
+    tk.Label(tab2, text="Numerical precision:").grid(row=3, column=0, sticky="W")
+    numerical_precision = tk.StringVar(tab2, "")
+    numerical_precision_entry = tk.Entry(tab2, textvariable=numerical_precision, width=10)
+    numerical_precision_entry.insert(0, settings['numerical_precision'])
+    numerical_precision_entry.grid(row=3, column=1, columnspan=2, sticky="W")
+
     # Tab 2 | Columns subset
-    tk.Label(tab2, text="Columns subset:").grid(row=3, column=0, sticky="W")
+    tk.Label(tab2, text="Columns subset:").grid(row=4, column=0, sticky="W")
     columns_subset = tk.StringVar(tab2, "")
     columns_subset_entry = tk.Entry(tab2, textvariable=columns_subset, width=entry_width)
-    columns_subset_entry.grid(row=3, column=1, columnspan=3)
+    columns_subset_entry.grid(row=4, column=1, columnspan=3)
     columns_subset_entry.insert(0, settings['columns_subset'])
 
     # Tab2 | Blank tile
-    tk.Label(tab2, text="Blank tile <*>:").grid(row=4, column=0, sticky="W")
+    tk.Label(tab2, text="Blank tile <*>:").grid(row=5, column=0, sticky="W")
     blank_tile = tk.StringVar(tab2, "")
     blank_tile_entry = tk.Entry(tab2, textvariable=blank_tile, width=entry_width)
-    blank_tile_entry.grid(row=4, column=1, columnspan=3)
+    blank_tile_entry.grid(row=5, column=1, columnspan=3)
     blank_tile_entry.insert(0, settings['blank_tile'])
 
     # Tab2 | Add padding to each widget
@@ -145,13 +156,14 @@ def main():
         child.grid_configure(padx=5, pady=3)
 
     # Final: Compare button
-    compare_button = tk.Button(tab1, text="Compare", command=lambda: run_comparison.run(settings={
+    compare_button = tk.Button(tab1, text="Compare", command=lambda: thread_run(settings={
         'lhs': lhs.get(),
         'rhs': rhs.get(),
         'output': output.get(),
         'delimiter': delimiter.get(),
         'decimal': decimal.get(),
         'comment': comment.get(),
+        'numerical_precision': numerical_precision.get(),
         'columns_subset': columns_subset.get(),
         'blank_tile': blank_tile.get()
     }, log=log))
