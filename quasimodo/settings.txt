@@ -1,1 +1,1 @@
-{'lhs': 'C:\\Users\\admin\\Desktop\\1.csv', 'rhs': 'C:\\Users\\admin\\Desktop\\3.csv', 'output': 'C:\\Users\\admin\\Desktop', 'delimiter': ';', 'decimal': '.', 'comment': '', 'numerical_precision': '0.01', 'columns_subset': '', 'blank_tile': ''}
+{'lhs': 'C:\\Users\\admin\\Desktop\\old\\1', 'rhs': 'C:\\Users\\admin\\Desktop\\old\\1', 'output': 'C:\\Users\\admin\\Desktop', 'delimiter': ';', 'decimal': '.', 'comment': '', 'numerical_precision': 0, 'columns_subset': '', 'blank_tile': ''}

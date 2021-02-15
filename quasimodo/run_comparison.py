@@ -40,14 +40,15 @@ def create_job_list(settings):
             for common_file in common_files:
                 lhs_file = os.path.join(lhs, common_file)
                 rhs_file = os.path.join(rhs, common_file)
-                job_list = job_list.append({"LeftFile": lhs_file, "RightFile": rhs_file}, ignore_index=True)
+                job_list = job_list.append({"LeftFile": Path(lhs_file), "RightFile": Path(rhs_file)}, ignore_index=True)
 
     # Add numbers
     job_list['Number'] = job_list.reset_index().index+1
     return job_list
 
 
-def run(settings, log):
+def run(settings, progress_bar, log):
+    progress_bar['value'] = 0 # reset progressbar from previous job
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     utils.add_log(log, "\n#################################")
     utils.add_log(log, "\nStarting job: " + timestamp + "\n")
@@ -70,11 +71,13 @@ def run(settings, log):
     job_list.to_excel(writer, sheet_name="JobList", index=False)
 
     # Iterate over jobs
+    no_jobs = len(job_list.index)
     for index, row in job_list.iterrows():
         # Log current tables
-        utils.add_log(log, "[" + str(index+1) + "]")
+        utils.add_log(log, "[" + str(index+1) + "/" + str(no_jobs) + "]")
         utils.add_log(log, "Left:  " + str(row['LeftFile']))
         utils.add_log(log, "Right: " + str(row['RightFile']) + "\n")
+        progress_bar['value'] = (index+1)/no_jobs * 100
 
         # Check if files exist
         if not row['LeftFile'].exists():
@@ -178,7 +181,7 @@ def compare(lhs, rhs, columns_subset, numerical_precision):
             if not all(output[col]):
                 the_same_flag = False
         elif pd.api.types.is_numeric_dtype(output[col]):
-            if not all(abs(output[col]) < float(numerical_precision)):
+            if not all(abs(output[col]) < 10^numerical_precision):
                 the_same_flag = False
 
     # Add LHS only cols

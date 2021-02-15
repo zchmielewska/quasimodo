@@ -8,20 +8,19 @@ from pathlib import Path
 
 # todo: what is subset is selected and there are no columns in this subset
 # todo: progressbar
-# todo: add numerical precision as this thing that you cange numbers
 # todo: order of the columns
 # todo: output folder cant be empty
 
 
 # Separate thread for the main run function
-def thread_run(settings, log):
+def thread_run(settings, progress_bar, log):
     # Call work function
-    t=threading.Thread(target=run_comparison.run, args=(settings, log))
+    t=threading.Thread(target=run_comparison.run, args=(settings, progress_bar, log))
     t.start()
 
 
 def main():
-    entry_width = 72
+    entry_width = 80
 
     # Load configuration
     # If settings file doesn't exist, create it; otherwise read it
@@ -51,7 +50,6 @@ def main():
 
     # Create instance
     window = tk.Tk()
-    window.geometry("600x400")
 
     # Add a title
     window.title("quasimodo | compare tables")
@@ -64,44 +62,44 @@ def main():
     tab2 = ttk.Frame(tab_control)
     tab_control.add(tab2, text="Settings")
 
-    tab1.columnconfigure(0, weight=1)
+    # Tab1 configuration
+    tab1.columnconfigure(0, weight=0)
+    tab1.columnconfigure(1, weight=1)
 
-    # Tab1 | Paths frame
-    paths_frame = ttk.LabelFrame(tab1, text="Paths")
-    paths_frame.grid(row=0, column=0, sticky="NSEW")
-    paths_frame.grid_configure(padx=10, pady=10)
-    paths_frame.columnconfigure(0, weight=0)
-    paths_frame.columnconfigure(1, weight=1)
-
-    # Tab1 | Paths frame | Left entry box
+    # Tab1 | Left entry box
     lhs = tk.StringVar()
-    tk.Label(paths_frame, text="Left:").grid(row=0, column=0, sticky="W")
-    lhs_entry = tk.Entry(paths_frame, textvariable=lhs)
+    lhs_label = tk.Label(tab1, text="Left:")
+    lhs_label.grid(row=0, column=0, sticky="W", padx=5, pady=(12, 3))
+    lhs_entry = tk.Entry(tab1, textvariable=lhs)
     lhs_entry.insert(0, settings['lhs'])
-    lhs_entry.grid(row=0, column=1, sticky="WE")
+    lhs_entry.grid(row=0, column=1, sticky="WE", padx=5, pady=(12, 3))
     lhs_entry.focus()
 
-    # Tab1 | Paths frame | Right entry box
+    # Tab1 | Right entry box
     rhs = tk.StringVar()
-    tk.Label(paths_frame, text="Right:").grid(row=1, column=0, sticky="W")
-    rhs_entry = tk.Entry(paths_frame, textvariable=rhs)
+    rhs_label = tk.Label(tab1, text="Right:")
+    rhs_label.grid(row=1, column=0, sticky="W", padx=5, pady=3)
+    rhs_entry = tk.Entry(tab1, textvariable=rhs)
     rhs_entry.insert(0, settings['rhs'])
-    rhs_entry.grid(row=1, column=1, sticky="WE")
+    rhs_entry.grid(row=1, column=1, sticky="WE", padx=5, pady=3)
 
-    # Tab1 | Paths frame | Output folder
-    tk.Label(paths_frame, text="Output folder:").grid(row=2, column=0, sticky="W")
+    # Tab1 | Output folder
+    output_label = tk.Label(tab1, text="Output folder:")
+    output_label.grid(row=2, column=0, sticky="W", padx=5, pady=3)
     output = tk.StringVar()
-    output_entry = tk.Entry(paths_frame, textvariable=output)
+    output_entry = tk.Entry(tab1, textvariable=output)
     output_entry.insert(0, settings['output'])
-    output_entry.grid(row=2, column=1, sticky="WE")
+    output_entry.grid(row=2, column=1, sticky="WE", padx=5, pady=3)
 
-    # Tab 1 | Paths frame | Add padding to widgets
-    for child in paths_frame.winfo_children():
-        child.grid_configure(padx=5, pady=3)
-
+    # Tab 1 | Progressbar
+    progress_bar = ttk.Progressbar(tab1, orient="horizontal", mode="determinate")
+    progress_bar.grid(row=3, column=1, sticky="NSEW", padx=5, pady=10)
+    progress_bar['maximum'] = 100
+    # progress_bar['value'] = 50
+    
     # Tab1 | Log
     log = scrolledtext.ScrolledText(tab1, height=12)
-    log.grid_configure(row=2, padx=10, pady=10, sticky="WE")
+    log.grid(row=4, columnspan=2, sticky="NSEW", padx=5, pady=(3, 12))
     log.insert(tk.END, "Log...\n")
     log.configure(state='disabled')
 
@@ -131,11 +129,11 @@ def main():
     comment_entry.insert(0, settings['comment'])
 
     # Tab2 | Numerical precision
-    tk.Label(tab2, text="Numerical precision:").grid(row=3, column=0, sticky="W")
-    numerical_precision = tk.StringVar(tab2, "")
-    numerical_precision_entry = tk.Entry(tab2, textvariable=numerical_precision, width=10)
-    numerical_precision_entry.insert(0, settings['numerical_precision'])
-    numerical_precision_entry.grid(row=3, column=1, columnspan=2, sticky="W")
+    tk.Label(tab2, text="Numerical precision (10^x):").grid(row=3, column=0, sticky="W")
+    numerical_precision = tk.IntVar(tab2)
+    numerical_precision.set(settings['numerical_precision'])
+    numerical_precision_spin = tk.Spinbox(tab2, from_=-10, to=10, textvariable=numerical_precision)
+    numerical_precision_spin.grid(row=3, column=1, sticky="W")
 
     # Tab 2 | Columns subset
     tk.Label(tab2, text="Columns subset:").grid(row=4, column=0, sticky="W")
@@ -166,8 +164,8 @@ def main():
         'numerical_precision': numerical_precision.get(),
         'columns_subset': columns_subset.get(),
         'blank_tile': blank_tile.get()
-    }, log=log))
-    compare_button.grid(row=1)
+    }, progress_bar=progress_bar, log=log))
+    compare_button.grid(row=3, column=0, sticky="NSEW", padx=5, pady=10)
 
     # Start GUI
     window.mainloop()
