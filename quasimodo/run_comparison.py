@@ -21,6 +21,7 @@ def create_job_list(settings):
         blank_tile_list = ['']
 
     # If blank tile hasn't been set, the list contains one element with empty string
+    incorrect_folder = False
     for blank_tile_element in blank_tile_list:
         lhs_replaced = settings['lhs'].replace("<*>", blank_tile_element)
         rhs_replaced = settings['rhs'].replace("<*>", blank_tile_element)
@@ -29,11 +30,23 @@ def create_job_list(settings):
         lhs = Path(lhs_replaced)
         rhs = Path(rhs_replaced)
 
+        # file + folder | folder + file
         if (lhs_type == "file" and rhs_type == "folder") or (lhs_type == "folder" and rhs_type == "file"):
             msg.showwarning("Inconsistent sources", "Left and right must be either both files or folders.")
+        # file + file
         elif lhs_type == "file" and rhs_type == "file":
             job_list = job_list.append({"LeftFile": lhs, "RightFile": rhs}, ignore_index=True)
+        # folder + folder
         elif lhs_type == "folder" and rhs_type == "folder":
+            # Check if folders exist
+            if not lhs.exists():
+                msg.showwarning("Incorrect folder", "Left folder does not exist:\n" + str(lhs))
+                incorrect_folder = True
+                return job_list, incorrect_folder
+            if not rhs.exists():
+                msg.showwarning("Incorrect folder", "Right folder does not exist:\n" + str(rhs))
+                incorrect_folder = True
+                return job_list, incorrect_folder
             lhs_files = [f for f in os.listdir(lhs) if os.path.isfile(os.path.join(lhs, f))]
             rhs_files = [f for f in os.listdir(rhs) if os.path.isfile(os.path.join(rhs, f))]
             common_files = np.intersect1d(np.array(lhs_files), np.array(rhs_files))  # todo: add only csv files
@@ -44,15 +57,20 @@ def create_job_list(settings):
 
     # Add numbers
     job_list['Number'] = job_list.reset_index().index+1
-    return job_list
+    return job_list, incorrect_folder
 
 
 def run(settings, progress_bar, log):
-    progress_bar['value'] = 0 # reset progressbar from previous job
+    # Reset progressbar from previous job
+    progress_bar['value'] = 0
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    utils.add_log(log, "\n#################################")
+    utils.add_log(log, "\n" + "#" * 80)
     utils.add_log(log, "\nStarting job: " + timestamp + "\n")
-    job_list = create_job_list(settings)
+
+    # Retrieve job_list / Leave program if folder(s) doesn't exist
+    job_list, incorrect_folder = create_job_list(settings)
+    if incorrect_folder:
+        return
 
     # Prepare output file
     output_folder = utils.sanitize_output(settings)
@@ -103,14 +121,16 @@ def run(settings, progress_bar, log):
             if settings['comment'] == "":
                 lhs = pd.read_csv(row['LeftFile'], sep=settings['delimiter'], decimal=settings['decimal'])
             else:
-                lhs = pd.read_csv(row['LeftFile'], sep=settings['delimiter'], decimal=settings['decimal'], comment=settings['comment'])
+                lhs = pd.read_csv(row['LeftFile'], sep=settings['delimiter'], decimal=settings['decimal'],
+                                  comment=settings['comment'])
         except pd.errors.EmptyDataError:
             lhs = pd.DataFrame()
         try:
             if settings['comment'] == "":
                 rhs = pd.read_csv(row['RightFile'], sep=settings['delimiter'], decimal=settings['decimal'])
             else:
-                rhs = pd.read_csv(row['RightFile'], sep=settings['delimiter'], decimal=settings['decimal'], comment=settings['comment'])
+                rhs = pd.read_csv(row['RightFile'], sep=settings['delimiter'], decimal=settings['decimal'],
+                                  comment=settings['comment'])
         except pd.errors.EmptyDataError:
             rhs = pd.DataFrame()
 
@@ -152,7 +172,6 @@ def compare(lhs, rhs, columns_subset, numerical_precision):
                 zero_like_row.append("")
             else:
                 zero_like_row.append(0)
-
         zeros = pd.DataFrame(data=[zero_like_row], columns=list(rhs.columns))
         frames = [rhs, zeros]
         rhs = pd.concat(frames)
@@ -165,7 +184,6 @@ def compare(lhs, rhs, columns_subset, numerical_precision):
                 zero_like_row.append("")
             else:
                 zero_like_row.append(0)
-
         zeros = pd.DataFrame(data=[zero_like_row], columns=list(lhs.columns))
         frames = [lhs, zeros]
         lhs = pd.concat(frames)
@@ -181,7 +199,7 @@ def compare(lhs, rhs, columns_subset, numerical_precision):
             if not all(output[col]):
                 the_same_flag = False
         elif pd.api.types.is_numeric_dtype(output[col]):
-            if not all(abs(output[col]) < 10^numerical_precision):
+            if not all(abs(output[col]) < 10**numerical_precision):
                 the_same_flag = False
 
     # Add LHS only cols
@@ -197,5 +215,3 @@ def compare(lhs, rhs, columns_subset, numerical_precision):
         the_same_flag = False
 
     return output, the_same_flag
-
-
