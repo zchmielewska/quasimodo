@@ -11,7 +11,7 @@ from pathlib import Path
 # todo: order of the columns
 # todo: output folder cant be empty
 # todo: jak nie ma pliku to do logu ze skonczyl robote
-# todo: zapis przy każdej iteracji
+# todo: zapis przy kazdej iteracji
 
 
 # Separate thread for the main run function
@@ -54,7 +54,7 @@ def main():
     window = tk.Tk()
 
     # Add a title
-    window.title("quasimodo | compare tables | v0.9000")
+    window.title("quasimodo | compare tables | v0.900")
 
     # Create tabs
     tab_control = ttk.Notebook(window)

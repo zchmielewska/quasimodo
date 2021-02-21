@@ -153,6 +153,7 @@ def compare(lhs, rhs, columns_subset, numerical_precision):
     the_same_flag = True
 
     # There might be columns only in LHS or RHS
+    #sorted(set(l1) & set(l2), key=l1.index)
     common_cols = np.intersect1d(np.array(lhs.columns), np.array(rhs.columns))
     lhs_only_cols = np.setdiff1d(np.array(lhs.columns), common_cols)
     rhs_only_cols = np.setdiff1d(np.array(rhs.columns), common_cols)
