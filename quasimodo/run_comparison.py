@@ -1,9 +1,8 @@
 import numpy as np
 import pandas as pd
-import tkinter as tk
 import os
+import pandas.api.types
 from quasimodo import utils
-from pandas.api.types import is_string_dtype
 from datetime import datetime
 from pathlib import Path
 from tkinter import messagebox as msg
@@ -166,26 +165,28 @@ def compare(lhs, rhs, columns_subset, numerical_precision):
 
     # RHS has fewer rows
     if len(lhs) - len(rhs) > 0:
+        no_rows_difference = len(lhs) - len(rhs)
         zero_like_row = []
         for c in rhs.columns:
-            if is_string_dtype(rhs[c]):
-                zero_like_row.append("")
-            else:
+            if pandas.api.types.is_numeric_dtype(rhs[c]):
                 zero_like_row.append(0)
+            else:
+                zero_like_row.append("")
         zeros = pd.DataFrame(data=[zero_like_row], columns=list(rhs.columns))
-        frames = [rhs, zeros]
+        frames = [rhs, pd.concat([zeros] * no_rows_difference)]
         rhs = pd.concat(frames)
 
     # LHS has fewer rows
     if len(rhs) - len(lhs) > 0:
+        no_rows_difference = len(rhs) - len(lhs)
         zero_like_row = []
         for c in lhs.columns:
-            if is_string_dtype(lhs[c]):
-                zero_like_row.append("")
-            else:
+            if pandas.api.types.is_numeric_dtype(lhs[c]):
                 zero_like_row.append(0)
+            else:
+                zero_like_row.append("")
         zeros = pd.DataFrame(data=[zero_like_row], columns=list(lhs.columns))
-        frames = [lhs, zeros]
+        frames = [lhs, pd.concat([zeros] * no_rows_difference)]
         lhs = pd.concat(frames)
 
     output = pd.DataFrame(index=range(max(len(lhs), len(rhs))))
